@@ -1,6 +1,8 @@
 import reflex as rx
 import requests
 
+from ..components.site_page import site_page
+
 
 class book_entry(rx.Base):
     author_key: list[str] | None
@@ -49,8 +51,8 @@ class SearchState(rx.State):
                 self.book_query.books.append(book_entry(**book))
 
         except Exception as e:
-            print(e)
             self.book_query = search_list(books=[])
+            return rx.toast.error(f"No books found.{e}")
 
     @rx.var(cache=True)
     def book_list(self) -> search_list:
@@ -64,55 +66,57 @@ def book_form() -> rx.Component:
     """The book search form."""
     return rx.form(
         rx.form.field(
-            rx.form.label("Book Title"),
+            rx.form.label("Add a book"),
             rx.flex(
                 rx.form.control(
-                    rx.input(id="book_title", placeholder="Enter a book title"),
+                    rx.input(
+                        id="book_title", placeholder="Enter a book title", width="100%"
+                    ),
                     as_child=True,
                     width="100%",
                 ),
                 rx.button("Search", type="submit", margin_left="1rem"),
                 width="100%",
             ),
+            width="100%",
         ),
+        width="100%",
         on_submit=SearchState.search_for_book,
     )
 
 
+@site_page(
+    route="/search",
+    title="",
+)
 def search() -> rx.Component:
     # Welcome Page (Index)
-    return rx.container(
+    return rx.box(
         rx.vstack(
-            rx.heading(
-                "Search For a Book", width="100%", text_align="center", margin="1rem"
-            ),
             book_form(),
             rx.cond(
                 SearchState.has_searched,
                 rx.vstack(
-                    rx.heading("Books"),
-                    rx.vstack(
-                        rx.cond(
-                            SearchState.book_list.books,
-                            rx.foreach(
-                                SearchState.book_list.books[
-                                    : SearchState.visible_results
-                                ],
-                                lambda book: rx.vstack(
+                    rx.cond(
+                        SearchState.book_list.books,
+                        rx.foreach(
+                            SearchState.book_list.books[: SearchState.visible_results],
+                            lambda book: rx.vstack(
+                                rx.flex(
                                     rx.flex(
-                                        rx.flex(
-                                            rx.image(
-                                                rx.cond(
-                                                    book["cover_i"],
-                                                    f"https://covers.openlibrary.org/b/id/{book['cover_i']}-M.jpg",
-                                                    "/placeholder.png",
-                                                ),
-                                                height="100px",
-                                                object_fit="cover",
+                                        rx.image(
+                                            rx.cond(
+                                                book["cover_i"],
+                                                f"https://covers.openlibrary.org/b/id/{book['cover_i']}-M.jpg",
+                                                "/placeholder.png",
                                             ),
-                                            width="75px",
-                                            justify_content="center",
+                                            height="100px",
+                                            object_fit="cover",
                                         ),
+                                        width="75px",
+                                        justify_content="center",
+                                    ),
+                                    rx.flex(
                                         rx.vstack(
                                             rx.text(
                                                 f"{book['title']} - {book['author_name']}"
@@ -126,27 +130,35 @@ def search() -> rx.Component:
                                             margin_left="1rem",
                                             grow=1,
                                         ),
-                                        grow=1,
+                                        rx.link(
+                                            rx.button("Add", margin_left="1rem"),
+                                            href="/add?book_key=" + book["key"],
+                                        ),
+                                        justify_content="space-between",
+                                        align_items="center",
                                         width="100%",
                                     ),
-                                    rx.divider(),
+                                    grow=1,
                                     width="100%",
                                 ),
+                                rx.divider(),
+                                width="100%",
                             ),
-                            rx.text("No books found."),
                         ),
-                        padding="1rem",
-                        height="500px",
-                        overflow="auto",
-                        width="100%",
-                        background_color=rx.color("gray", 3),
-                        columns="repeat(auto-fill, minmax(200px, 1fr))",
-                        gap="1rem",
+                        rx.text("No books found."),
                     ),
+                    padding="1rem",
+                    height="500px",
+                    overflow="auto",
+                    background_color=rx.color("gray", 3),
+                    columns="repeat(auto-fill, minmax(200px, 1fr))",
+                    gap="1rem",
                     width="100%",
                 ),
                 rx.text(),
             ),
+            width="100%",
         ),
+        width="100%",
         on_mount=SearchState.clear,
     )
