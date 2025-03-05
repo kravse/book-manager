@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import reflex as rx
 import requests
 
@@ -29,6 +31,17 @@ class search_list(rx.Base):
         return len(self.books)
 
 
+@lru_cache(maxsize=128)  # Set max size for the cache
+def search_open_lib(query: str) -> search_list:
+    url = f"https://openlibrary.org/search.json?q={query}"
+    response = requests.get(url)
+    books = response.json()["docs"]
+    book_query = search_list(books=[])
+    for book in books:
+        book_query.books.append(book_entry(**book))
+    return book_query
+
+
 class SearchState(rx.State):
     """The app state."""
 
@@ -44,12 +57,7 @@ class SearchState(rx.State):
             key = next(iter(data))
             title = data[key]
             title = title.replace(" ", "+")
-            url = f"https://openlibrary.org/search.json?q={title}"
-            response = requests.get(url)
-            books = response.json()["docs"]
-            for book in books:
-                self.book_query.books.append(book_entry(**book))
-
+            self.book_query = search_open_lib(title)
         except Exception as e:
             self.book_query = search_list(books=[])
             return rx.toast.error(f"No books found.{e}")

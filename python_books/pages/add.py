@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import reflex as rx
 import requests
 from PIL import Image
@@ -14,6 +16,22 @@ class book_meta(rx.Base):
     ...
 
 
+@lru_cache(maxsize=128)  # Set max size for the cache
+def get_author(author: str) -> str:
+    author_url = f"https://openlibrary.org{author}.json"
+    response = requests.get(author_url)
+    return response.json().get("name", "")
+
+    ...
+
+
+@lru_cache(maxsize=128)  # Set max size for the cache
+def get_book_details(key: str) -> book_meta:
+    url = f"https://openlibrary.org{key}.json"
+    response = requests.get(url)
+    return book_meta(**response.json())
+
+
 class AddState(rx.State):
     current_book_key = ""
     current_book_meta: book_meta = None
@@ -21,20 +39,15 @@ class AddState(rx.State):
 
     def get_author(self):
         first_author = next(iter(self.current_book_meta.authors))
-        print(self.current_book_meta)
-        author_url = f"https://openlibrary.org{first_author['author']['key']}.json"
-        response = requests.get(author_url)
-        self.current_book_meta.author = response.json().get("name", "")
+        self.current_book_meta.author = get_author(first_author["author"]["key"])
 
     def get_book_details(self):
         """Get books from the API."""
         page_params = self.router.page.params
         key = page_params.get("book_key")
-        if key and key != self.current_book_key:
+        if key:
             try:
-                url = f"https://openlibrary.org{key}.json"
-                response = requests.get(url)
-                self.current_book_meta = book_meta(**response.json())
+                self.current_book_meta = get_book_details(key)
                 self.current_book_key = key
                 self.get_author()
             except Exception as e:
