@@ -35,7 +35,7 @@ def main_content(component: rx.Component, title: str) -> rx.Component:
             width="100%",
             direction="column",
             align_items="center",
-            height="90vh",
+            min_height="90vh",
         ),
         footer(),
         width="100%",

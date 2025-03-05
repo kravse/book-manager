@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import lru_cache
 
 import reflex as rx
@@ -5,6 +6,7 @@ import requests
 from PIL import Image
 
 from ..components.site_page import site_page
+from ..models.models import BookList
 
 
 class book_meta(rx.Base):
@@ -54,6 +56,18 @@ class AddState(rx.State):
                 self.current_book_key = ""
                 return rx.toast.error(f"No book found.{e}")
 
+    def add_book(self):
+        with rx.session() as session:
+            session.add(
+                BookList(
+                    title=self.current_book_meta.title,
+                    author=self.current_book_meta.author,
+                    date_read=datetime.now(),
+                    num_times_read=1,
+                    open_library_key=self.current_book_key,
+                )
+            )
+
     @rx.var(cache=True)
     def description(self) -> str:
         desc = self.current_book_meta.description
@@ -79,11 +93,16 @@ class AddState(rx.State):
 )
 def add() -> rx.Component:
     return rx.box(
-        rx.flex(
+        rx.vstack(
             rx.image(
                 src=AddState.image,
                 object_fit="cover",
                 max_width="200px",
+            ),
+            rx.button(
+                "Add This Book",
+                variant="outline",
+                on_click=AddState.add_book,
             ),
             rx.box(
                 rx.el.h3(
@@ -100,6 +119,7 @@ def add() -> rx.Component:
             justify_content="center",
             align_items="center",
             width="100%",
+            gap="1rem",
         ),
         width="100%",
         on_mount=AddState.get_book_details,

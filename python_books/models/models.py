@@ -11,11 +11,11 @@ class BookList(
 ):
     title: str = Field(nullable=False)
     author: str = Field(nullable=False)
-    date_read: datetime.datetime = Field(nullable=False)
-    rating: int = Field(nullable=False)
-    review: str = Field(nullable=False)
+    date_read: datetime.datetime = Field(nullable=True)
+    rating: int = Field(nullable=True)
+    review: str = Field(nullable=True)
     num_times_read: int = Field(nullable=False)
-    open_library_key: str = Field(nullable=False)
+    open_library_key: str = Field(nullable=True)
 
 
 class User_Session(
