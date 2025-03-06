@@ -90,7 +90,7 @@ class AddState(AuthState):
         url = (
             f"https://covers.openlibrary.org/b/id/{self.current_book_meta.covers[0]}-L.jpg"
             if self.current_book_meta.covers
-            else "/placeholder.png"
+            else f"{self.router.page.host}/placeholder.png"
         )
         return Image.open(requests.get(url, stream=True).raw)
 

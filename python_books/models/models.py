@@ -38,6 +38,7 @@ class User(
         return bcrypt.checkpw(bytes_password, self.pw_hash)
 
 
+# class Books(
 class BookList(
     rx.Model,
     table=True,
@@ -45,6 +46,7 @@ class BookList(
     title: str = Field(nullable=False)
     author: str = Field(nullable=False)
     date_read: datetime.datetime = Field(nullable=True)
+    # date_added: datetime.datetime = Field(nullable=True)
     rating: int = Field(nullable=True)
     review: str = Field(nullable=True)
     num_times_read: int = Field(nullable=False)

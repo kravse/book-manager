@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import reflex as rx
 
 from ..components.auth import AuthState
@@ -31,9 +33,28 @@ def index() -> rx.Component:
                     rx.foreach(
                         IndexState.books,
                         lambda book: rx.vstack(
-                            rx.text(f"{book['title']}"),
-                            rx.text(f"{book['author']}"),
+                            rx.flex(
+                                rx.flex(
+                                    rx.image(
+                                        src="/placeholder.png",
+                                        alt="Book cover",
+                                        height="100px",
+                                        margin_right="1rem",
+                                    ),
+                                    rx.flex(
+                                        rx.el.h4(f"{book['title']}"),
+                                        rx.text(f"{book['author']}"),
+                                        justify_content="space-between",
+                                        direction="column",
+                                    ),
+                                ),
+                                rx.text(f"{book['date_read']}"),
+                                align_items="flex-end",
+                                justify_content="space-between",
+                                width="100%",
+                            ),
                             rx.divider(),
+                            width="100%",
                         ),
                     ),
                     rx.text(
