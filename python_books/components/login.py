@@ -5,6 +5,7 @@ import reflex as rx
 from ..models.models import User
 from .auth import AuthState
 from .form_wrap import form_wrap
+from .spinner import spinner
 
 
 class LoginState(AuthState):
@@ -100,7 +101,7 @@ def login_gate(page):
                     page(),
                     login(),
                 ),
-                rx.spinner(),
+                spinner(),
             ),
             width="100%",
         )

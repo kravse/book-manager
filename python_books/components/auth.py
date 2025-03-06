@@ -10,11 +10,11 @@ from ..models.models import User, User_Session
 
 
 class AuthState(rx.State):
-    auth_token: str = rx.Cookie(same_site="Strict", secure=True)
+    auth_token: str = rx.Cookie(name="sess", path="/", same_site="Strict", secure=True)
 
-    @rx.var(cache=False)
+    @rx.var(cache=True)
     def authenticated_user(self) -> User:
-        if self.auth_token == "":
+        if not self.auth_cookie_exists:
             self.do_logout()
         with rx.session() as session:
             result = session.exec(
@@ -29,13 +29,17 @@ class AuthState(rx.State):
                 return user
         return User(id=-1)
 
-    @rx.var(cache=False)
+    @rx.var(cache=True)
     def is_authenticated(self) -> bool:
         return (
-            self.auth_token != ""
+            self.auth_cookie_exists
             and self.authenticated_user.id is not None
             and self.authenticated_user.id >= 0
         )
+
+    @rx.var(cache=True)
+    def auth_cookie_exists(self) -> bool:
+        return bool(self.auth_token and self.auth_token.strip())
 
     def do_logout(self) -> None:
         """Destroy AuthSessions associated with the auth_token."""
@@ -45,7 +49,7 @@ class AuthState(rx.State):
             ).all():
                 session.delete(auth_session)
             session.commit()
-        self.auth_token = ""
+        return rx.remove_cookie("sess")
 
     def generate_auth_token(self) -> str:
         return str(uuid.UUID(bytes=os.urandom(16), version=4))

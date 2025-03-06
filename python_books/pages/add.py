@@ -7,6 +7,7 @@ from PIL import Image
 
 from ..components.auth import AuthState
 from ..components.site_page import site_page
+from ..components.spinner import spinner
 from ..models.models import BookList
 
 
@@ -97,38 +98,42 @@ class AddState(AuthState):
 
 @site_page(
     route="/add",
-    title="Add a Book",
+    title="",
 )
 def add() -> rx.Component:
-    return rx.box(
-        rx.vstack(
-            rx.image(
-                src=AddState.image,
-                object_fit="cover",
-                max_width="200px",
-            ),
-            rx.button(
-                "Add This Book",
-                variant="outline",
-                on_click=AddState.add_book,
-            ),
-            rx.box(
-                rx.el.h3(
-                    f"{AddState.current_book_meta.title} ({AddState.current_book_meta.author})",
-                    text_align="center",
-                    margin="1rem",
+    return rx.cond(
+        AddState.current_book_meta,
+        rx.box(
+            rx.vstack(
+                rx.image(
+                    src=AddState.image,
+                    object_fit="cover",
+                    max_width="200px",
                 ),
-                rx.text(AddState.description),
-                margin_left="1rem",
-                width="500px",
-                max_width="100%",
+                rx.button(
+                    "Add This Book",
+                    variant="outline",
+                    on_click=AddState.add_book,
+                ),
+                rx.box(
+                    rx.el.h3(
+                        f"{AddState.current_book_meta.title} ({AddState.current_book_meta.author})",
+                        text_align="center",
+                        margin="1rem",
+                    ),
+                    rx.text(AddState.description),
+                    margin_left="1rem",
+                    width="500px",
+                    max_width="100%",
+                ),
+                direction="column",
+                justify_content="center",
+                align_items="center",
+                width="100%",
+                gap="1rem",
             ),
-            direction="column",
-            justify_content="center",
-            align_items="center",
             width="100%",
-            gap="1rem",
+            on_mount=AddState.get_book_details,
         ),
-        width="100%",
-        on_mount=AddState.get_book_details,
+        spinner(),
     )
