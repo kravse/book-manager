@@ -1,20 +1,18 @@
-from datetime import datetime
-
 import reflex as rx
 
 from ..components.auth import AuthState
 from ..components.site_page import site_page
-from ..models.models import BookList
+from ..models.models import Book
 
 
 class IndexState(AuthState):
-    book_list: list[BookList] = []
+    book_list: list[Book] = []
 
     @rx.var(cache=True)
-    def books(self) -> list[BookList]:
+    def books(self) -> list[Book]:
         with rx.session() as session:
             book_list = session.exec(
-                BookList.select().where(BookList.user_id == self.authenticated_user.id)
+                Book.select().where(Book.user_id == self.authenticated_user.id)
             ).all()
         return book_list
 

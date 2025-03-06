@@ -8,7 +8,7 @@ from PIL import Image
 from ..components.auth import AuthState
 from ..components.site_page import site_page
 from ..components.spinner import spinner
-from ..models.models import BookList
+from ..models.models import Book
 
 
 class book_meta(rx.Base):
@@ -46,7 +46,7 @@ class AddState(AuthState):
         self.current_book_meta.author = get_author(first_author["author"]["key"])
 
     def get_book_details(self):
-        """Get books from the API."""
+        """Get books fom the API."""
         page_params = self.router.page.params
         key = page_params.get("book_key")
         if key:
@@ -62,7 +62,7 @@ class AddState(AuthState):
         with rx.session() as session:
             try:
                 session.add(
-                    BookList(
+                    Book(
                         title=self.current_book_meta.title,
                         author=self.current_book_meta.author,
                         date_read=datetime.now(),

@@ -25,7 +25,7 @@ class User(
     pw_hash: bytes = Field(nullable=False)
     enabled: bool = False
 
-    books: list["BookList"] = Relationship(back_populates="user")
+    books: list["Book"] = Relationship(back_populates="user")
 
     @staticmethod
     def hash_password(pw: str) -> bytes:
@@ -38,15 +38,14 @@ class User(
         return bcrypt.checkpw(bytes_password, self.pw_hash)
 
 
-# class Books(
-class BookList(
+class Book(
     rx.Model,
     table=True,
 ):
     title: str = Field(nullable=False)
     author: str = Field(nullable=False)
     date_read: datetime.datetime = Field(nullable=True)
-    # date_added: datetime.datetime = Field(nullable=True)
+    date_added: datetime.datetime = Field(nullable=True)
     rating: int = Field(nullable=True)
     review: str = Field(nullable=True)
     num_times_read: int = Field(nullable=False)

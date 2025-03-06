@@ -14,4 +14,3 @@ app = rx.App(
         accent_color="sky",
     ),
 )
-import os
