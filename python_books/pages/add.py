@@ -5,6 +5,7 @@ import reflex as rx
 import requests
 from PIL import Image
 
+from ..components.auth import AuthState
 from ..components.site_page import site_page
 from ..models.models import BookList
 
@@ -34,7 +35,7 @@ def get_book_details(key: str) -> book_meta:
     return book_meta(**response.json())
 
 
-class AddState(rx.State):
+class AddState(AuthState):
     current_book_key = ""
     current_book_meta: book_meta = None
     current_author = rx.Component
@@ -58,15 +59,22 @@ class AddState(rx.State):
 
     def add_book(self):
         with rx.session() as session:
-            session.add(
-                BookList(
-                    title=self.current_book_meta.title,
-                    author=self.current_book_meta.author,
-                    date_read=datetime.now(),
-                    num_times_read=1,
-                    open_library_key=self.current_book_key,
+            try:
+                session.add(
+                    BookList(
+                        title=self.current_book_meta.title,
+                        author=self.current_book_meta.author,
+                        date_read=datetime.now(),
+                        num_times_read=1,
+                        open_library_key=self.current_book_key,
+                        user_id=self.authenticated_user.id,
+                    )
                 )
-            )
+                session.commit()
+            except Exception as e:
+                return rx.toast.error(f"Failed to add book.{e}")
+
+            return rx.redirect("/")
 
     @rx.var(cache=True)
     def description(self) -> str:

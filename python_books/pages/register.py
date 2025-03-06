@@ -23,7 +23,6 @@ class RegisterState(AuthState):
     def on_submit(self, auth_data):
         input_user = auth_data.get("name", "")
         input_password = auth_data.get("password", "")
-
         if not input_user or not input_password:
             return rx.toast.error("Please provide a username and password")
 
@@ -93,5 +92,6 @@ def register() -> rx.Component:
                 size="1",
                 margin_top="1rem",
             ),
+            on_submit=RegisterState.on_submit,
         ),
     )

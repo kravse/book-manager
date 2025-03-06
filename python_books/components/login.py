@@ -17,19 +17,19 @@ class LoginState(AuthState):
         input_password = auth_data.get("password", "")
 
         with rx.session() as session:
-            user = session.exec(
-                User.select().where(User.name == input_user)
-            ).one_or_none()
+            try:
+                user = session.exec(
+                    User.select().where(User.name == input_user)
+                ).one_or_none()
 
-        if user is None or not user.verify(input_password):
-            return rx.toast.error("Incorrect username or password")
-        if (
-            user is not None
-            and user.id is not None
-            and user.enabled
-            and user.verify(input_password)
-        ):
-            self._login(user.id)
+                if not user or not user.verify(input_password):
+                    rx.toast.error("Incorrect username or password")
+                    return
+                user_id = user.id
+                if user.id and user.enabled:
+                    self._login(user_id)
+            finally:
+                session.close()
 
 
 def login() -> rx.Component:

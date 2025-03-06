@@ -1,15 +1,20 @@
 import reflex as rx
 
+from ..components.auth import AuthState
 from ..components.site_page import site_page
 from ..models.models import BookList
 
 
-class IndexState(rx.State):
+class IndexState(AuthState):
     book_list: list[BookList] = []
 
-    def get_books(self):
+    @rx.var(cache=True)
+    def books(self) -> list[BookList]:
         with rx.session() as session:
-            self.book_list = session.exec(BookList.select()).all()
+            book_list = session.exec(
+                BookList.select().where(BookList.user_id == self.authenticated_user.id)
+            ).all()
+        return book_list
 
 
 @site_page(
@@ -17,20 +22,30 @@ class IndexState(rx.State):
     title="",
 )
 def index() -> rx.Component:
-    return rx.container(
-        rx.vstack(
-            rx.foreach(
-                IndexState.book_list,
-                lambda book: rx.text(f"{book['title']}"),
-            ),
-            rx.text(
-                "You don't have any books yet! ",
-                rx.link("add some", href="/search"),
-                " to get started.",
-                text_align="center",
+    return rx.cond(
+        AuthState.is_authenticated,
+        rx.container(
+            rx.vstack(
+                rx.cond(
+                    IndexState.books,
+                    rx.foreach(
+                        IndexState.books,
+                        lambda book: rx.vstack(
+                            rx.text(f"{book['title']}"),
+                            rx.text(f"{book['author']}"),
+                            rx.divider(),
+                        ),
+                    ),
+                    rx.text(
+                        "You don't have any books yet! ",
+                        rx.link("add some", href="/search"),
+                        " to get started.",
+                        text_align="center",
+                        width="100%",
+                    ),
+                ),
                 width="100%",
             ),
-            width="100%",
         ),
-        on_mount=IndexState.get_books,
+        rx.fragment(),
     )
