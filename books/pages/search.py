@@ -1,84 +1,34 @@
-from functools import lru_cache
-
 import reflex as rx
-import requests
 
 from ..components.book_stack import book_stack
 from ..components.site_page import site_page
 from ..models.models import Book
-
-# class book_entry(rx.Base):
-#     author_key: list[str] | None
-#     author_name: list[str] | None
-#     cover_edition_key: str | None
-#     cover_i: int | None
-#     edition_count: int | None
-#     first_publish_year: int | None
-#     has_fulltext: bool | None
-#     ia: list[str] | None
-#     ia_collection_s: str | None
-#     key: str | None
-#     language: list[str] | None
-#     lending_edition_s: str | None
-#     lending_identifier_s: str | None
-#     public_scan_b: bool | None
-#     title: str | None
-
-
-class search_list(rx.Base):
-    books: list[Book]
-
-    def __len__(self) -> int:
-        return len(self.books)
-
-
-@lru_cache(maxsize=128)  # Set max size for the cache
-def search_open_lib(query: str) -> search_list:
-    url = f"https://openlibrary.org/search.json?q={query}"
-    response = requests.get(url)
-    books = response.json()["docs"]
-    book_query = search_list(books=[])
-    for book in books:
-        author_metadata = book.get("author_name")
-        author = None
-        if author_metadata:
-            author = author_metadata[0]
-
-        book_query.books.append(
-            Book(
-                title=book.get("title"),
-                author=author,
-                date_read=None,
-                cover_key=book.get("cover_i"),
-                open_library_key=book.get("key"),
-                first_publish_year=book.get("first_publish_year"),
-            )
-        )
-    return book_query
+from ..services.open_lib import search_open_lib
 
 
 class SearchState(rx.State):
     """The app state."""
 
-    book_query: search_list = search_list(books=[])
+    book_query: list[Book] = []
     has_searched: bool = False
     visible_results: int = 10
 
     def search_for_book(self, data):
         """Get books from the API."""
         self.has_searched = True
-        self.book_query = search_list(books=[])
+        self.book_query = []
         try:
             key = next(iter(data))
             title = data[key]
             title = title.replace(" ", "+")
             self.book_query = search_open_lib(title)
-        except Exception as e:
-            self.book_query = search_list(books=[])
-            return rx.toast.error(f"No books found.{e}")
+        except StopIteration:  # Raised when iterating over an empty dict
+            return rx.toast.error("No data provided.")
+        except KeyError:  # Raised if key is not found
+            return rx.toast.error(f"Error: Key '{key}' not found in data.")
 
     @rx.var(cache=True)
-    def book_list(self) -> search_list:
+    def book_list(self) -> list[Book]:
         return self.book_query
 
     def clear(self):
@@ -121,9 +71,9 @@ def search() -> rx.Component:
                 SearchState.has_searched,
                 rx.vstack(
                     rx.cond(
-                        SearchState.book_list.books,
+                        SearchState.book_list,
                         rx.foreach(
-                            SearchState.book_list.books[: SearchState.visible_results],
+                            SearchState.book_list[: SearchState.visible_results],
                             lambda book: book_stack(book),
                         ),
                         rx.text("No books found."),

@@ -31,7 +31,7 @@ def index() -> rx.Component:
                     IndexState.books,
                     rx.foreach(
                         IndexState.books,
-                        lambda book: book_stack(book),
+                        lambda book: book_stack(book, show_rating=True),
                     ),
                     rx.text(
                         "You don't have any books yet! ",

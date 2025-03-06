@@ -1,9 +1,10 @@
 import reflex as rx
 
 from ..models.models import Book
+from .rating import rating
 
 
-def book_stack(book: Book) -> rx.Component:
+def book_stack(book: Book, show_rating: bool = False) -> rx.Component:
     return (
         rx.vstack(
             rx.flex(
@@ -21,20 +22,22 @@ def book_stack(book: Book) -> rx.Component:
                     justify_content="center",
                 ),
                 rx.flex(
-                    rx.vstack(
+                    rx.flex(
                         rx.text(f"{book['title']} - {book['author']}"),
                         rx.text(
                             f"{book['first_publish_year']}",
                             weight="bold",
                         ),
                         justify_content="space-between",
+                        flex_direction="column",
                         width="100%",
+                        height="100%",
                         margin_left="1rem",
-                        grow=1,
                     ),
+                    rx.cond(show_rating, rating(book), None),
                     rx.link(
-                        rx.button("Add", margin_left="1rem"),
-                        href="/add?book_key=" + book["open_library_key"],
+                        rx.button("View", margin_left="1rem"),
+                        href="/view?book_key=" + book["open_library_key"],
                     ),
                     justify_content="space-between",
                     align_items="center",

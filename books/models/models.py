@@ -3,7 +3,7 @@ from typing import Optional
 
 import bcrypt
 import reflex as rx
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, UniqueConstraint
 
 
 class User_Session(
@@ -42,16 +42,20 @@ class Book(
     rx.Model,
     table=True,
 ):
+    # unique constraint
+    __table_args__ = (
+        UniqueConstraint("open_library_key", name="unique_open_library_key"),
+    )
     title: str = Field(nullable=False)
     author: str = Field(nullable=False)
-    date_read: datetime.datetime = Field(nullable=True)
-    date_added: datetime.datetime = Field(nullable=True)
-    cover_key: str = Field(nullable=True)
-    rating: int = Field(nullable=True)
-    review: str = Field(nullable=True)
-    num_times_read: int = Field(nullable=True)
-    open_library_key: str = Field(nullable=True)
-    first_publish_year: str = Field(nullable=True)
-    user_id: int = Field(nullable=True, foreign_key="user.id")
+    date_read: datetime.datetime = Field(default=None, nullable=True)
+    date_added: datetime.datetime = Field(default=None, nullable=True)
+    cover_key: str = Field(default=None, nullable=True)
+    rating: int = Field(default=None, nullable=True)
+    review: str = Field(default=None, nullable=True)
+    num_times_read: int = Field(default=None, nullable=True)
+    open_library_key: Optional[str] = Field(default=None, nullable=True)
+    first_publish_year: str = Field(default=None, nullable=True)
+    user_id: int = Field(default=None, nullable=True, foreign_key="user.id")
 
     user: Optional[User] = Relationship(back_populates="books")
