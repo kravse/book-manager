@@ -1,6 +1,7 @@
 import reflex as rx
 
 from ..components.auth import AuthState
+from ..components.book_stack import book_stack
 from ..components.site_page import site_page
 from ..models.models import Book
 
@@ -30,30 +31,7 @@ def index() -> rx.Component:
                     IndexState.books,
                     rx.foreach(
                         IndexState.books,
-                        lambda book: rx.vstack(
-                            rx.flex(
-                                rx.flex(
-                                    rx.image(
-                                        src="/placeholder.png",
-                                        alt="Book cover",
-                                        height="100px",
-                                        margin_right="1rem",
-                                    ),
-                                    rx.flex(
-                                        rx.el.h4(f"{book['title']}"),
-                                        rx.text(f"{book['author']}"),
-                                        justify_content="space-between",
-                                        direction="column",
-                                    ),
-                                ),
-                                rx.text(f"{book['date_read']}"),
-                                align_items="flex-end",
-                                justify_content="space-between",
-                                width="100%",
-                            ),
-                            rx.divider(),
-                            width="100%",
-                        ),
+                        lambda book: book_stack(book),
                     ),
                     rx.text(
                         "You don't have any books yet! ",

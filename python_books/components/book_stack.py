@@ -1,15 +1,17 @@
 import reflex as rx
 
+from ..models.models import Book
 
-def book_stack(book) -> rx.Component:
+
+def book_stack(book: Book) -> rx.Component:
     return (
         rx.vstack(
             rx.flex(
                 rx.flex(
                     rx.image(
                         rx.cond(
-                            book["cover_i"],
-                            f"https://covers.openlibrary.org/b/id/{book['cover_i']}-M.jpg",
+                            book["cover_key"],
+                            f"https://covers.openlibrary.org/b/id/{book['cover_key']}-M.jpg",
                             "/placeholder.png",
                         ),
                         height="100px",
@@ -20,7 +22,7 @@ def book_stack(book) -> rx.Component:
                 ),
                 rx.flex(
                     rx.vstack(
-                        rx.text(f"{book['title']} - {book['author_name']}"),
+                        rx.text(f"{book['title']} - {book['author']}"),
                         rx.text(
                             f"{book['first_publish_year']}",
                             weight="bold",
@@ -32,7 +34,7 @@ def book_stack(book) -> rx.Component:
                     ),
                     rx.link(
                         rx.button("Add", margin_left="1rem"),
-                        href="/add?book_key=" + book["key"],
+                        href="/add?book_key=" + book["open_library_key"],
                     ),
                     justify_content="space-between",
                     align_items="center",

@@ -5,28 +5,28 @@ import requests
 
 from ..components.book_stack import book_stack
 from ..components.site_page import site_page
+from ..models.models import Book
 
-
-class book_entry(rx.Base):
-    author_key: list[str] | None
-    author_name: list[str] | None
-    cover_edition_key: str | None
-    cover_i: int | None
-    edition_count: int | None
-    first_publish_year: int | None
-    has_fulltext: bool | None
-    ia: list[str] | None
-    ia_collection_s: str | None
-    key: str | None
-    language: list[str] | None
-    lending_edition_s: str | None
-    lending_identifier_s: str | None
-    public_scan_b: bool | None
-    title: str | None
+# class book_entry(rx.Base):
+#     author_key: list[str] | None
+#     author_name: list[str] | None
+#     cover_edition_key: str | None
+#     cover_i: int | None
+#     edition_count: int | None
+#     first_publish_year: int | None
+#     has_fulltext: bool | None
+#     ia: list[str] | None
+#     ia_collection_s: str | None
+#     key: str | None
+#     language: list[str] | None
+#     lending_edition_s: str | None
+#     lending_identifier_s: str | None
+#     public_scan_b: bool | None
+#     title: str | None
 
 
 class search_list(rx.Base):
-    books: list[book_entry]
+    books: list[Book]
 
     def __len__(self) -> int:
         return len(self.books)
@@ -39,7 +39,21 @@ def search_open_lib(query: str) -> search_list:
     books = response.json()["docs"]
     book_query = search_list(books=[])
     for book in books:
-        book_query.books.append(book_entry(**book))
+        author_metadata = book.get("author_name")
+        author = None
+        if author_metadata:
+            author = author_metadata[0]
+
+        book_query.books.append(
+            Book(
+                title=book.get("title"),
+                author=author,
+                date_read=None,
+                cover_key=book.get("cover_i"),
+                open_library_key=book.get("key"),
+                first_publish_year=book.get("first_publish_year"),
+            )
+        )
     return book_query
 
 
