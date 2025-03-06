@@ -6,7 +6,6 @@ from sqlalchemy.exc import IntegrityError
 from ..components.auth import AuthState
 from ..components.rating import rating
 from ..components.site_page import site_page
-from ..components.spinner import spinner
 from ..models.models import Book
 from ..services.open_lib import get_book_from_key
 
