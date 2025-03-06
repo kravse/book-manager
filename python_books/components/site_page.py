@@ -49,7 +49,6 @@ def site_page(
     on_load: EventType[[], BASE_STATE] | None = None,  # type: ignore
 ):
     def decorator(page: Callable[[], rx.Component]) -> rx.Component:
-        # all pages require login
         if login_gated:
             the_page = login_gate(page)
         else:
