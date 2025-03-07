@@ -48,15 +48,7 @@ def site_page(
     login_gated: bool = True,
     on_load: EventType[[], BASE_STATE] | None = None,  # type: ignore
 ):
-    """The template decorator.
-
-    This decorator is used to create a template for all pages.
-    It includes login requirements, a sidebar, and a main content area.
-    It also sets metadata for the browser.
-    """
-
     def decorator(page: Callable[[], rx.Component]) -> rx.Component:
-        # all pages require login
         if login_gated:
             the_page = login_gate(page)
         else:
